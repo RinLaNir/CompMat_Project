@@ -17,10 +17,12 @@ void test_1() {
 void test_2() {
 	BigNumber bn;
 	bn = input();
-	printf("%x\n", bn._bits[1]);
+	printf("%x", bn._bits[1]);
 	output(bn);
 }
 
 int main() {
 	test_2();
+	char str[20] = "FFFF";
+	printf("%x", atoi(str));
 }

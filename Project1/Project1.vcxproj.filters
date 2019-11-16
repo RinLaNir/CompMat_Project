@@ -21,6 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BigNumber.c">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_BigNumber.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
