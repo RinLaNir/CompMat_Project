@@ -26,6 +26,12 @@ BigNumber input() {
 	getchar();
 	gets_s(str, 1024);
 	BN.SIZE = strlen(str) / 4;
+	if (str[0] == '-') {
+		BN._sign = -1;
+		strcpy(str, str + 1);
+	}
+	else BN._sign = 1;
+
 	for (int i = strlen(str);i > 0;i -= 4)
 	{
 		BN._bits[k] = convert(i > 4 ? str + i - 4 : str, BN.base);
@@ -37,6 +43,7 @@ BigNumber input() {
 }
 
 void output(BigNumber x) {
+	if (x._sign == -1) printf("-");
 	for (int i = x.SIZE;i >= 0;i--) {
 		printf("%x", x._bits[i]);
 	}
