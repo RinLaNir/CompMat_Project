@@ -42,9 +42,13 @@ void input(BigNumber *BN) {
 
 void output(BigNumber x) {
 	if (x._sign == -1) printf("-");
-	for (Itype i = x.SIZE;i >= 0;i--) {
-		printf("%x", x._bits[i]);
+	for (Itype i = x.SIZE;i >= 0;i--)
+	{
+		if (x._bits == 0) x.SIZE--;
+		else break;
 	}
+	printf("%x", x._bits[x.SIZE]);
+	for (Itype i = x.SIZE-1;i >= 0;i--) printf("%08x", x._bits[i]);
 	printf("\n");
 }
 
@@ -136,11 +140,11 @@ void sub_BigNumber(BigNumber x, BigNumber y, BigNumber *z) {
 		z->_sign = 1;
 	}
 	else if (CompareResult == 1) {
-		z->_sign = x._sign * y._sign;
+		z->_sign = x._sign;
 		sub_BigNumber2(x, y, z);
 	}
 	else if (CompareResult == 0) {
-		z->_sign = x._sign * y._sign * -1;
+		z->_sign = y._sign * -1;
 		sub_BigNumber2(y, x, z);
 	}
 }
