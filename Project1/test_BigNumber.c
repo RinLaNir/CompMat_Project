@@ -15,12 +15,19 @@ void test_1() {
 }
 
 void test_2() {
-	BigNumber bn;
-	bn = input();
-	printf("%x\n", bn._bits[1]);
-	output(bn);
+	BigNumber x,y,z;
+	input(&x);
+	input(&y);
+	z = sub(x, y);
+	output(z);
 }
 
 int main() {
-	test_2();
+	int i = 0;
+	while (i != 100)
+	{
+		test_2();
+		printf("i = ");
+		scanf("%d", &i);
+	}
 }

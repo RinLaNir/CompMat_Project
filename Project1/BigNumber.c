@@ -1,64 +1,196 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define MAX_UINT 0x100000000
 
 #include <stdio.h>
 #include <string.h>
-#include "BigNumber.h"
 #include <stdlib.h>
 #include <ctype.h> 
 #include <math.h>
+#include "BigNumber.h"
+#include "common.h"
 
 #define MAX_LEN 1024
 
-BigNumber input() {
+void input(BigNumber *BN) {
 	//args
-	BigNumber BN;
-	char str[MAX_LEN];                                          //âõ³äíå ÷èñëî
-	int sytema_chislennya;
-	int k = 0;													//âèêîðèñòîâóºòüñÿ ó for
-	unsigned int lst[MAX_LEN];                                  //ìàññèâ ÷èñåë, ÿêèé ïåðåäàåòüñÿ ó _bits ãîëîâíî¿ ñòðóêòóðè
+	Chtype str[MAX_LEN];                                          //âõ³äíå ÷èñëî
+	Itype sytema_chislennya;
+	Itype k = 0;													//âèêîðèñòîâóºòüñÿ ó for
 
 	printf("Sytema_chislennya: ");
 	scanf("%d", &sytema_chislennya);
-	BN.base = sytema_chislennya;
+	BN->base = sytema_chislennya;
 
-	BN._bits = lst;
+	for (Itype i = 0; i < MAX_LEN; i++) BN->_bits[i] = 0;
 	printf("Number: ");
 	getchar();
 	gets_s(str, 1024);
-	BN.SIZE = strlen(str) / 4;
+	BN->SIZE = strlen(str) / 8;
 	if (str[0] == '-') {
-		BN._sign = -1;
+		BN->_sign = -1;
 		strcpy(str, str + 1);
 	}
-	else BN._sign = 1;
+	else BN->_sign = 1;
 
-	for (int i = strlen(str);i > 0;i -= 4)
+	for (Itype i = strlen(str);i > 0;i -= 8)
 	{
-		BN._bits[k] = convert(i > 4 ? str + i - 4 : str, BN.base);
-		if (i > 4)str[i - 4] = '\0';
+		BN->_bits[k] = Ñonvert(i > 8 ? str + i - 8 : str, BN->base);
+		if (i > 8)str[i - 8] = '\0';
 		k++;
 	}
-	//printf(" k = %d size = %d ", k, BN.SIZE);
-	return BN;
 }
 
 void output(BigNumber x) {
 	if (x._sign == -1) printf("-");
-	for (int i = x.SIZE;i >= 0;i--) {
+	for (Itype i = x.SIZE;i >= 0;i--) {
 		printf("%x", x._bits[i]);
 	}
 	printf("\n");
 }
 
-unsigned int convert(char* number, int base) {
-	unsigned int num = 0;
-	int len = strlen(number)-1;
+UItype Ñonvert(char* number, Itype base) {
+	UItype num = 0;
+	Itype len = strlen(number)-1;
 	//printf("len %d %s\n", len, number);
-	for (int i = len; i >= 0; i--)
+	for (Itype i = len; i >= 0; i--)
 	{
-		if (number[i] >= '0' && number[i] <= '9') num += ((int)number[i] - 48)*pow(base, len - i);
-		else if (tolower(number[i]) >= 'a' && tolower(number[i]) <= 'f') num += ((int)tolower(number[i]) - 87)*pow(base, len - i);
+		if (number[i] >= '0' && number[i] <= '9') num += ((Itype)number[i] - 48)*pow(base, len - i);
+		else if (tolower(number[i]) >= 'a' && tolower(number[i]) <= 'f') num += ((Itype)tolower(number[i]) - 87)*pow(base, len - i);
 		else printf("Convert error %c %s\n", tolower(number[i]), number);
 	}
 	return num;
+}
+
+//error C2371  redefinition; different basic types
+void add_BigNumber(BigNumber x, BigNumber y, BigNumber *z);
+void add_BigNumber2(BigNumber x, BigNumber y, BigNumber *z);
+void sub_BigNumber(BigNumber x, BigNumber y, BigNumber *z);
+void sub_BigNumber2(BigNumber x, BigNumber y, BigNumber *z);
+
+
+BigNumber add(const BigNumber x, const BigNumber y) {
+	BigNumber z;
+	z.base = x.base;
+	LLtype num = 0;
+	for (Itype i = 0; i < MAX_LEN; i++) z._bits[i] = 0;
+	z.SIZE = BigNumberMaxSize(x, y);
+	if (x._sign == y._sign) add_BigNumber(x, y, &z);
+	else sub_BigNumber(x, y, &z);
+	return z;
+}
+
+void add_BigNumber(BigNumber x, BigNumber y, BigNumber *z) {
+	z->_sign = x._sign;
+	ULLtype num = 0;
+	Itype i = 0;
+	while (i <= x.SIZE && i <= y.SIZE)
+	{
+		num = (ULLtype)x._bits[i] + (ULLtype)y._bits[i];
+		if (z->_bits[i] + num > MAX_UINT) {
+			z->_bits[i] += (UItype)(num - MAX_UINT);
+			z->_bits[i + 1] += 1;
+			i++;
+		}
+		else {
+			z->_bits[i] += (UItype)num;
+			i++;
+		}
+	}
+	if (x.SIZE > y.SIZE) {
+		add_BigNumber2(x, y, z);
+	}
+	else if (x.SIZE < y.SIZE) {
+		add_BigNumber2(y, x, z);
+	}
+}
+
+void add_BigNumber2(BigNumber x, BigNumber y, BigNumber *z) {
+	ULLtype num;
+	for (Itype i = y.SIZE + 1;i <= x.SIZE;i++) {
+		num = z->_bits[i] + x._bits[i];
+		if (num > MAX_UINT) {
+			z->_bits[i] += num - MAX_UINT;
+			z->_bits[i + 1] = 1;
+		}
+		else z->_bits[i] += num;
+	}
+}
+
+BigNumber sub(BigNumber x, BigNumber y) {
+	BigNumber z;
+	z.base = x.base;
+	LLtype num = 0;
+	for (Itype i = 0; i < MAX_LEN; i++) z._bits[i] = 0;
+	z.SIZE = BigNumberMaxSize(x, y);
+	if (x._sign == y._sign) sub_BigNumber(x, y, &z);
+	else add_BigNumber(x, y, &z);
+	return z;
+}
+
+void sub_BigNumber(BigNumber x, BigNumber y, BigNumber *z) {
+	z->_sign = x._sign * y._sign;
+	Stype CompareResult = BigNumberÑompare(x, y);
+	if (CompareResult == 2) {
+		z->SIZE = 0;
+		z->_bits[0] = 0;
+		z->_sign = 1;
+	}
+	else if (CompareResult == 1) {
+		z->_sign = x._sign * y._sign;
+		sub_BigNumber2(x, y, z);
+	}
+	else if (CompareResult == 0) {
+		z->_sign = x._sign * y._sign * -1;
+		sub_BigNumber2(y, x, z);
+	}
+}
+
+void sub_BigNumber2(BigNumber x, BigNumber y, BigNumber *z) {
+	LLtype num = 0;
+	Itype i = 0;
+	while (i <= x.SIZE && i <= y.SIZE)
+	{
+		if (x._bits[i] < y._bits[i]) {
+			z->_bits[i] += MAX_UINT + x._bits[i] - y._bits[i];
+			z->_bits[i + 1] -= 1;
+			i++;
+		}
+		else {
+			z->_bits[i] += x._bits[i] - y._bits[i];
+			i++;
+		}
+	}
+	if (x.SIZE > y.SIZE) {
+		for (Itype i = y.SIZE + 1;i <= x.SIZE;i++) {
+			if (z->_bits[i] == MAX_UINT - 1 && x._bits[i] == 0) z->_bits[i + 1] -= 1;
+			else z->_bits[i] += x._bits[i];
+		}
+	}
+	else if (x.SIZE < y.SIZE) {
+		for (Itype i = x.SIZE + 1;i <= y.SIZE;i++) {
+			if (z->_bits[i] == MAX_UINT - 1 && y._bits[i] == 0) z->_bits[i + 1] -= 1;
+			else z->_bits[i] += y._bits[i];
+		}
+	}
+}
+
+Itype BigNumberMaxSize(BigNumber x, BigNumber y) {
+	if (x.SIZE > y.SIZE) return x.SIZE;
+	else return y.SIZE;
+}
+
+Itype BigNumberÑompare(BigNumber x, BigNumber y) {
+	if (x.SIZE > y.SIZE) return 1;
+	else if (x.SIZE < y.SIZE) return 0;
+	else
+	{
+		Itype i = x.SIZE;
+		while (i>=0)
+		{
+			if (x._bits[i] > y._bits[i]) return 1;
+			else if (x._bits[i] < y._bits[i]) return 0;
+			i--;
+		}
+		return 2;
+	}
 }
