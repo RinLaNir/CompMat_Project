@@ -198,3 +198,32 @@ Itype BigNumberÑompare(BigNumber x, BigNumber y) {
 		return 2;
 	}
 }
+
+void mulmns(BigNumber x, BigNumber y, BigNumber* z);
+
+BigNumber mul(BigNumber x, BigNumber y) {
+	BigNumber z;
+	z.base = x.base;
+	z._sign = x._sign * y._sign;
+	for (Itype i = 0; i < MAX_LEN; i++) z._bits[i] = 0;
+	z.SIZE = x.SIZE + y.SIZE;
+	mulmns(x, y, &z);
+	return z;
+}
+
+void mulmns(BigNumber x, BigNumber y, BigNumber* z) {
+	Itype m = x.SIZE+1;
+	Itype n = y.SIZE+1;
+	ULLtype k, t, b;
+	Itype i, j;
+	for (j = 0; j < n; j++) {
+		k = 0;
+		for (i = 0; i < m; i++) {
+			t = (ULLtype)x._bits[i] * (ULLtype)y._bits[j] + (ULLtype)z->_bits[i + j] + k;
+			z->_bits[i + j] = (UItype)t;
+			if (t > MAX_UINT) k = t >> 32;
+			else k = 0;
+		}
+		z->_bits[j + m] = k;
+	}
+}

@@ -15,8 +15,8 @@ extern void input(BigNumber *x);
 extern void output(BigNumber x);
 extern BigNumber add(BigNumber x, BigNumber y);
 extern BigNumber sub(BigNumber x, BigNumber y);
-/*extern BigNumber mul(BigNumber x, BigNumber y);
-extern BigNumber div(BigNumber x, BigNumber y);
+extern BigNumber mul(BigNumber x, BigNumber y);
+/*extern BigNumber div(BigNumber x, BigNumber y);
 extern BigNumber mod(BigNumber x, BigNumber y);
 extern BigNumber unadd(BigNumber x, BigNumber y);
 extern BigNumber unsub(BigNumber x, BigNumber y);*/

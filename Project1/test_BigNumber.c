@@ -18,7 +18,7 @@ void test_2() {
 	BigNumber x,y,z;
 	input(&x);
 	input(&y);
-	z = sub(x, y);
+	z = mul(x, y);
 	output(z);
 }
 
