@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <ctype.h> 
 #include <math.h>
+#include <malloc.h>
 #include "BigNumber.h"
 #include "common.h"
 
@@ -226,4 +227,121 @@ void mulmns(BigNumber x, BigNumber y, BigNumber* z) {
 		}
 		z->_bits[j + m] = k;
 	}
+}
+
+int divmnu(BigNumber* q, BigNumber* r, const BigNumber x, const BigNumber y);
+int nlz(unsigned x);
+
+BigNumber Div(BigNumber x, BigNumber y) {
+	BigNumber q;
+	q.base = x.base;
+	q._sign = x._sign * y._sign;
+	for (Itype i = 0; i < MAX_LEN; i++) q._bits[i] = 0;
+	q.SIZE = BigNumberMaxSize(x, y);
+	BigNumber r;
+	r.base = x.base;
+	r._sign = x._sign * y._sign;
+	for (Itype i = 0; i < MAX_LEN; i++) r._bits[i] = 0;
+	r.SIZE = BigNumberMaxSize(x, y);
+	divmnu(&q, &r, x, y);
+	return q;
+}
+
+int nlz(unsigned x) {
+	int n;
+
+	if (x == 0) return(32);
+	n = 0;
+	if (x <= 0x0000FFFF) { n = n + 16; x = x << 16; }
+	if (x <= 0x00FFFFFF) { n = n + 8; x = x << 8; }
+	if (x <= 0x0FFFFFFF) { n = n + 4; x = x << 4; }
+	if (x <= 0x3FFFFFFF) { n = n + 2; x = x << 2; }
+	if (x <= 0x7FFFFFFF) { n = n + 1; }
+	return n;
+}
+
+int divmnu(BigNumber* q, BigNumber* r, const BigNumber x, const BigNumber y) {
+
+	Itype m = x.SIZE + 1;
+	Itype n = y.SIZE + 1;
+	const ULLtype b = 4294967296LL; // Number base (2**32).
+	UItype *un, *vn;                         // Normalized form of u, v.
+	ULLtype qhat;                   // Estimated quotient digit.
+	ULLtype rhat;                   // A remainder.
+	ULLtype p;                      // Product of two digits.
+	LLtype t, k;
+	Itype s, i, j;
+
+	if (m < n || n <= 0 || y._bits[n - 1] == 0)
+		return 1;                         // Return if invalid param.
+
+	if (n == 1) {                        // Take care of
+		k = 0;                            // the case of a
+		for (j = m - 1; j >= 0; j--) {    // single-digit
+			q->_bits[j] = (k*b + x._bits[j]) / y._bits[0];      // divisor here.
+			k = (k*b + x._bits[j]) - q->_bits[j] * y._bits[0];
+		}
+		if (r != NULL) r->_bits[0] = k;
+		return 0;
+	}
+
+	/* Normalize by shifting v left just enough so that its high-order
+	bit is on, and shift u left the same amount. We may have to append a
+	high-order digit on the dividend; we do that unconditionally. */
+
+	s = nlz(y._bits[n - 1]);             // 0 <= s <= 31.
+	vn = (UItype *)alloca(4 * n);
+	for (i = n - 1; i > 0; i--)
+		vn[i] = (y._bits[i] << s) | ((ULLtype)y._bits[i - 1] >> (32 - s));
+	vn[0] = y._bits[0] << s;
+
+	un = (UItype *)alloca(4 * (m + 1));
+	un[m] = (ULLtype)x._bits[m - 1] >> (32 - s);
+	for (i = m - 1; i > 0; i--)
+		un[i] = (x._bits[i] << s) | ((ULLtype)x._bits[i - 1] >> (32 - s));
+	un[0] = x._bits[0] << s;
+
+	for (j = m - n; j >= 0; j--) {       // Main loop.
+										 // Compute estimate qhat of q[j].
+		qhat = (un[j + n] * b + un[j + n - 1]) / vn[n - 1];
+		rhat = (un[j + n] * b + un[j + n - 1]) - qhat*vn[n - 1];
+	again:
+		if (qhat >= b || qhat*vn[n - 2] > b*rhat + un[j + n - 2])
+		{
+			qhat = qhat - 1;
+			rhat = rhat + vn[n - 1];
+			if (rhat < b) goto again;
+		}
+
+		// Multiply and subtract.
+		k = 0;
+		for (i = 0; i < n; i++) {
+			p = qhat*vn[i];
+			t = un[i + j] - k - (p & 0xFFFFFFFFLL);
+			un[i + j] = t;
+			k = (p >> 32) - (t >> 32);
+		}
+		t = un[j + n] - k;
+		un[j + n] = t;
+
+		q->_bits[j] = qhat;              // Store quotient digit.
+		if (t < 0) {              // If we subtracted too
+			q->_bits[j] = q->_bits[j] - 1;       // much, add back.
+			k = 0;
+			for (i = 0; i < n; i++) {
+				t = (ULLtype)un[i + j] + vn[i] + k;
+				un[i + j] = t;
+				k = t >> 32;
+			}
+			un[j + n] = un[j + n] + k;
+		}
+	} // End j.
+	  // If the caller wants the remainder, unnormalize
+	  // it and pass it back.
+	if (r != NULL) {
+		for (i = 0; i < n - 1; i++)
+			r->_bits[i] = (un[i] >> s) | ((unsigned long long)un[i + 1] << (32 - s));
+		r->_bits[n - 1] = un[n - 1] >> s;
+	}
+	return 0;
 }
