@@ -26,7 +26,8 @@ void input(BigNumber *BN) {
 	printf("Number: ");
 	getchar();
 	gets_s(str, 1024);
-	BN->SIZE = strlen(str) / 8;
+	if (strlen(str) % 8 == 0) BN->SIZE = strlen(str) / 8 - 1;
+	else BN->SIZE = strlen(str) / 8;
 	if (str[0] == '-') {
 		BN->_sign = -1;
 		strcpy(str, str + 1);
