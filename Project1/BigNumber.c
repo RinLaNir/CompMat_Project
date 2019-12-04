@@ -42,6 +42,28 @@ void input(BigNumber *BN) {
 	}
 }
 
+BigNumber add_num(const BigNumber* x, Itype l);
+BigNumber mul_num(BigNumber* x, Itype l);
+void change_size(BigNumber* x);
+
+BigNumber Parse() {
+	Itype n;
+	BigNumber x;
+	for (Itype i = 0; i < MAX_LEN; i++) x._bits[i] = 0;
+	x.SIZE = 0;
+	x._sign = 1;
+	Chtype str[MAX_LEN];
+	printf("Number: ");
+	gets_s(str, 1024);
+	for (Itype i = 0;i < strlen(str);i++) {
+		change_size(&x);
+		n = (int)str[i] - (int)'0';
+		mul_num(&x, 10);
+		add_num(&x, n);
+	}
+	return x;
+}
+
 void output(BigNumber x) {
 	if (x._sign == -1) printf("-");
 	for (Itype i = x.SIZE;i >= 0;i--)
@@ -52,6 +74,18 @@ void output(BigNumber x) {
 	printf("%x", x._bits[x.SIZE]);
 	for (Itype i = x.SIZE-1;i >= 0;i--) printf("%08x", x._bits[i]);
 	printf("\n");
+}
+
+void change_size(BigNumber* x) {
+	Itype i = x->SIZE+1;
+	while (i<=1024)
+	{
+		if (x->_bits[i] != 0) {
+			x->SIZE++; 
+			i++;
+		}
+		else break;
+	}
 }
 
 UItype Ñonvert(char* number, Itype base) {
@@ -83,6 +117,46 @@ BigNumber add(const BigNumber x, const BigNumber y) {
 	if (x._sign == y._sign) add_BigNumber(x, y, &z);
 	else sub_BigNumber(x, y, &z);
 	return z;
+}
+
+BigNumber add_num(BigNumber* x, Itype l) {
+	LLtype num = 0;
+	for (Itype i = 0;i <= x->SIZE;i++) {
+		num = x->_bits[i] + l;
+		if (num > MAX_UINT) {
+			x->_bits[i] = num - MAX_UINT;
+			l = 1;
+		}
+		else { x->_bits[i] = num; l = 0; }
+	}
+	if (l != 0) {
+		int i = x->SIZE+1;
+		while (l!=0)
+		{
+			num = x->_bits[i] + l;
+			if (num > MAX_UINT) {
+				x->_bits[i] = num - MAX_UINT;
+				l = 1;
+			}
+			else { x->_bits[i] = num; l = 0; }
+			i++;
+			x->SIZE++;
+		}
+	}
+}
+
+BigNumber mul_num(BigNumber* x, Itype l) {
+	Itype m = x->SIZE + 1;
+	ULLtype k, t, b;
+	Itype i;
+	k = 0;
+	for (i = 0; i < m; i++) {
+		t = (ULLtype)x->_bits[i] * (ULLtype)l + k;
+		x->_bits[i] = (UItype)t;
+		if (t > MAX_UINT) k = t >> 32;
+		else k = 0;
+	}
+	x->_bits[m] = k;
 }
 
 void add_BigNumber(BigNumber x, BigNumber y, BigNumber *z) {
