@@ -19,6 +19,7 @@ extern BigNumber mul(BigNumber x, BigNumber y);
 extern BigNumber mul_num(BigNumber* x, Itype l);
 extern BigNumber Div(BigNumber x, BigNumber y);
 extern BigNumber Parse();
+extern BigNumber gcd(BigNumber a, BigNumber b);
 /*extern BigNumber mod(BigNumber x, BigNumber y);
 extern BigNumber unadd(BigNumber x, BigNumber y);
 extern BigNumber unsub(BigNumber x, BigNumber y);*/

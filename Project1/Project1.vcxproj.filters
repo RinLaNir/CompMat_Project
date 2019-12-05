@@ -13,21 +13,30 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\headers">
+      <UniqueIdentifier>{60101b79-d02e-42a0-a28c-19c0dfb8508f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\src">
+      <UniqueIdentifier>{856fdf43-0536-4a9b-a44f-642deef8a5a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tests">
+      <UniqueIdentifier>{77e536c5-c60b-4da5-86f8-381eee4de136}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BigNumber.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BigNumber.h">
+      <Filter>Header Files\headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BigNumber.c">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\src</Filter>
     </ClCompile>
     <ClCompile Include="test_BigNumber.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\tests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,19 +18,16 @@ void test_2() {
 	BigNumber x,y,z;
 	input(&x);
 	input(&y);
-	z = mul(x, y);
+	z = gcd(x, y);
 	output(z);
 }
 
 int main() {
-	/*int i = 0;
+	int i = 0;
 	while (i != 100)
 	{
 		test_2();
 		printf("i = ");
 		scanf("%d", &i);
-	}*/
-	BigNumber x;
-	x = Parse();
-	output(x);
+	}
 }

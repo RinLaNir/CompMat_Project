@@ -44,7 +44,7 @@ void input(BigNumber *BN) {
 
 BigNumber add_num(const BigNumber* x, Itype l);
 BigNumber mul_num(BigNumber* x, Itype l);
-void change_size(BigNumber* x);
+void change_size_plus(BigNumber* x);
 
 BigNumber Parse() {
 	Itype n;
@@ -56,7 +56,7 @@ BigNumber Parse() {
 	printf("Number: ");
 	gets_s(str, 1024);
 	for (Itype i = 0;i < strlen(str);i++) {
-		change_size(&x);
+		change_size_plus(&x);
 		n = (int)str[i] - (int)'0';
 		mul_num(&x, 10);
 		add_num(&x, n);
@@ -76,13 +76,25 @@ void output(BigNumber x) {
 	printf("\n");
 }
 
-void change_size(BigNumber* x) {
+void change_size_plus(BigNumber* x) {
 	Itype i = x->SIZE+1;
 	while (i<=1024)
 	{
 		if (x->_bits[i] != 0) {
 			x->SIZE++; 
 			i++;
+		}
+		else break;
+	}
+}
+
+void change_size_minus(BigNumber* x) {
+	Itype i = x->SIZE;
+	while (i > 0)
+	{
+		if (x->_bits[i] == 0) {
+			x->SIZE--;
+			i--;
 		}
 		else break;
 	}
@@ -322,6 +334,21 @@ BigNumber Div(BigNumber x, BigNumber y) {
 	return q;
 }
 
+BigNumber mod(BigNumber x, BigNumber y) {
+	BigNumber q;
+	q.base = x.base;
+	q._sign = x._sign * y._sign;
+	for (Itype i = 0; i < MAX_LEN; i++) q._bits[i] = 0;
+	q.SIZE = BigNumberMaxSize(x, y);
+	BigNumber r;
+	r.base = x.base;
+	r._sign = x._sign * y._sign;
+	for (Itype i = 0; i < MAX_LEN; i++) r._bits[i] = 0;
+	r.SIZE = BigNumberMaxSize(x, y);
+	divmnu(&q, &r, x, y);
+	return r;
+}
+
 int nlz(unsigned x) {
 	int n;
 
@@ -419,4 +446,21 @@ int divmnu(BigNumber* q, BigNumber* r, const BigNumber x, const BigNumber y) {
 		r->_bits[n - 1] = un[n - 1] >> s;
 	}
 	return 0;
+}
+
+BigNumber gcd(BigNumber a, BigNumber b) {
+	BigNumber t;
+	t._sign = 1;
+	while (b.SIZE != 0 || b._bits[0]!=0) {
+		t.SIZE = b.SIZE;
+		t._sign = b._sign;
+		for (Itype i = 0; i <= t.SIZE; i++) t._bits[i] = b._bits[i];
+		b = mod(a,b);
+		a.SIZE = t.SIZE;
+		a._sign = t._sign;
+		for (Itype i = 0; i <= a.SIZE; i++) a._bits[i] = t._bits[i];
+		a = t;
+		change_size_minus(&b);
+	}
+	return a;
 }
